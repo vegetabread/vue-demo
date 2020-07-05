@@ -1,0 +1,16 @@
+@import './reset.scss';
+
+$fontSize : 37.5;
+@function px2rem($px) {
+    @return ($px / $fontSize) + rem;
+}
+
+@mixin center() {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.icon {
+    color: #333333;
+    font-size: px2rem(20);
+}
