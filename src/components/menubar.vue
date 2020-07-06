@@ -4,15 +4,15 @@
         <transition name="slide-up">
             <div class="footerwrapper" :class="{noshadow: charactorshow}" v-show="showif">
                 <div class="headericon">
-                    <span class="icon-menu"></span>
+                    <span class="icon-menu" @click="showmenu(3)"></span>
                 </div>
                 <div class="headericon">
-                    <span class="icon-flag" ></span>
+                    <span class="icon-flag" @click="showpro(2)"></span>
                 </div>
-                <div class="headericon">
+                <div class="headericon" @click="showtheme(1)">
                     <span class="icon-sun"></span>
                 </div>
-                <div class="headericon" @click="shownow">
+                <div class="headericon" @click="shownow(0)">
                     <span class="icon-a" >A</span>
                 </div>
             </div>
@@ -20,7 +20,7 @@
         <!-- 这是字体调整栏 -->
         <transition name="slide-up">
          <div class="settingwrapper" v-show="charactorshow">
-            <div class="setfontsize">
+            <div class="setfontsize" v-if="showtag === 0">
                 <div class="preview" :style="{fontSize: fontSizeList[0].fontSize+'px'}">A</div>
                 <!-- 选择字体大小横线部分 -->
                 <div class="selected">
@@ -39,11 +39,46 @@
                 </div>
                 <div class="preview" :style="{fontSize: fontSizeList[fontSizeList.length-1].fontSize+'px'}">A</div>
             </div>
-        </div>
+            <div class="setting-theme" v-else-if="showtag === 1">
+             <div class="setting-part"  v-for="(item,index) in themeslist" :key="index">
+                 <div class="top" :class="{'noborder': item.name ==='default'}" :style="{background: item.style.body.background}"  @click="changetheme(index)"></div>
+                 <div class="bottom" :class="{showsub: currenttheme === item.name}">{{item.name}}</div>
+             </div>
+            </div>
+            <!-- 下面是滚动条部分 -->
+            <div class="setprogress" v-else-if="showtag ===2">
+                <div class="progress-wrapper">
+                    <!-- 滚动条 -->
+                    <input type="range" class="progress" max="100" min="0" step="1"
+                     @input="onProgressInput($event.target.value)"
+                     @change="onProgressChange($event.target.value)"
+                     :value="progress"
+                     :disabled="!bookAvailable"
+                     ref="progress">
+                </div>
+                <!-- 提示页面加载中 -->
+                <div class="text-wrapper">
+                    <span>{{bookAvailable ? progress + '%' :'加载中...'}}</span>
+                </div>
+            </div>
+         </div>
+        </transition>
+        <!-- 插入的组件 -->
+        <set-menu :ifshowcontent="ifshowcontent"
+        v-show="ifshowcontent"
+        :navigation="navigation"
+        :bookAvailable="bookAvailable"
+        @jumpto="jumpto"></set-menu>
+        <!-- -------------------- -->
+        <transition name="fade">
+            <div class="contentmask"
+            v-show="ifshowcontent"
+            @click="hidecontent"></div>
         </transition>
     </div>
 </template>
 <script>
+import SetMenu from './comp/setmenu'
 export default {
   props: {
     showif: {
@@ -53,20 +88,72 @@ export default {
     fontSizeList: {
       type: Array
     },
-    defaultfontsize: Number
+    defaultfontsize: Number,
+    defaulttheme: Number,
+    themeslist: Array,
+    bookAvailable: Boolean,
+    navigation: Object
   },
   data () {
     return {
-      charactorshow: false
+      charactorshow: false,
+      showtag: 0,
+      currenttheme: '',
+      progress: 0,
+      ifshowcontent: false
     }
   },
+  components: {
+    SetMenu
+  },
   methods: {
-    shownow () {
-      this.charactorshow = !this.charactorshow
+    jumpto (val) {
+      this.$emit('jumpto', val)
     },
+    hidecontent () {
+      this.ifshowcontent = false
+    },
+    showmenu (val) {
+      this.ifshowcontent = true
+    },
+    onProgressInput (progress) {
+      this.progress = progress
+      this.$refs.progress.style.backgroundSize = `${this.progress}% 100%`
+    },
+    onProgressChange (progress) {
+      this.$emit('onProgresschange', progress)
+    },
+    //   修改主题函数
+    changetheme (val) {
+      console.log('接下来就是emit测试', val)
+      this.$emit('changetheme', val)
+    },
+    show (val) {
+      this.charactorshow = !this.charactorshow
+      this.showtag = val
+    },
+    showpro (val) {
+      this.charactorshow = !this.charactorshow
+      this.showtag = val
+    },
+    showtheme (val) {
+      this.charactorshow = !this.charactorshow
+      this.showtag = val
+    },
+    shownow (val) {
+      this.charactorshow = !this.charactorshow
+      console.log('dianjinlaile ')
+      if (this.showtag !== val) {
+        this.showtag = val
+        this.charactorshow = !this.charactorshow
+      }
+      this.showtag = val
+    },
+    // 隐藏操作
     hidenow () {
       this.charactorshow = false
     },
+    // 改变字体大小操作
     changesize (val) {
       this.$emit('changesize', val)
     }
@@ -183,7 +270,81 @@ export default {
                 }
             }
         }
+        .setting-theme{
+            display: flex;
+            height: 100%;
+            .setting-part{
+                flex: 1;
+                flex-direction: column;
+                display: flex;
+                padding: px2rem(4);
+                .top{
+                    flex: 1;
+                    &.noborder{
+                    border: px2rem(1) solid #ccc;
+                    }
+                }
+                .bottom{
+                    flex: 0 0 px2rem(20);
+                    font-size: px2rem(14);
+                    color: #ccc;
+                    @include center
+                }
+            }
+        }
+        .setprogress{
+            position: relative;
+            width: 100%;
+            height: 100%;
+            .progress-wrapper{
+                width: 100%;
+                height: 100%;
+                padding: 0 px2rem(30);
+                box-sizing: border-box;
+                @include center;
+                .progress{
+                    width: 100%;
+                    height: px2rem(2);
+                    -webkit-appearance: none;
+                    background: -webkit-linear-gradient(#999, #999) no-repeat #ddd;
+                    background-size: 0 100%;
+                    &:focus {
+                        outline: none;
+                    }
+                    &::-webkit-slider-thumb {
+                        -webkit-appearance: none;
+                        height: px2rem(20);
+                        width: px2rem(20);
+                        border-radius: 50%;
+                        background: white;
+                        box-shadow: 0 4px 4px 0 rgba(0, 0, 0, .15);
+                        border: px2rem(1) solid #ddd;
+                    }
+                }
+            }
+            .text-wrapper{
+                position: absolute;
+                top: px2rem(40);
+                left: 50%;
+                transform: translateX(-50%);
+                text-align: center;
+                font-size: px2rem(17);
+            }
+        }
+        .setmenu{
+            width: 100%;
+            height: 100%;
+        }
+    }
+    .contentmask{
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 101;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        background: rgba(51, 51, 51, .8);
     }
 }
-
 </style>

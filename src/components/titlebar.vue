@@ -7,10 +7,7 @@
                 </div>
                 <div class="right">
                     <div class="one">
-                        <span class="icon-read-more icon"></span>
-                    </div>
-                    <div class="one">
-                        <span class="icon-user icon"></span>
+                        <span class="icon-user icon" @click="test"></span>
                     </div>
                     <div class="one">
                         <span class="icon-menu icon"></span>
@@ -27,6 +24,11 @@ export default {
       type: Boolean,
       default: false
     }
+  },
+  methods: {
+    test () {
+      this.$emit('test')
+    }
   }
 }
 </script>
@@ -36,7 +38,7 @@ export default {
         position: absolute;
         width: 100%;
         height: px2rem(48);
-        z-index: 102;
+        z-index: 101;
         left: 0;
         display: flex;
         background: #fff;
