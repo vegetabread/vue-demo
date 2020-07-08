@@ -1,16 +1,18 @@
 @import './reset.scss';
-
+// 如何了重置css文件
 $fontSize : 37.5;
 @function px2rem($px) {
     @return ($px / $fontSize) + rem;
 }
-
+// 实现了rem动态适应屏幕大小
 @mixin center() {
     display: flex;
     justify-content: center;
     align-items: center;
 }
+// 一个居中设置
 .icon {
     color: #333333;
     font-size: px2rem(20);
 }
+// 字体的固定配置

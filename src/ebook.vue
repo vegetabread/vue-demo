@@ -1,14 +1,18 @@
 <template>
     <div class="ebook">
+      <!-- 头部组件 -->
         <title-bar :showif="showif"></title-bar>
         <div class="ebookwrapper">
+          <!-- 电子书显示盒子 -->
             <div id="read"></div>
+            <!-- 中部蒙版 -->
             <div class="mask">
                 <div class="left" @click="back"></div>
                 <div class="center" @click="show" ></div>
                 <div class="right" @click="goto"></div>
             </div>
         </div>
+        <!-- 底部导航栏组件 -->
         <menu-bar :showif="showif" ref="part" @changesize="changefontsize" :defaultfontsize="defaultfontsize" :fontSizeList="fontSizeList"></menu-bar>
     </div>
 </template>
@@ -22,6 +26,7 @@ export default {
   data () {
     return {
       showif: false,
+      // 字体大小数据
       fontSizeList: [
         { fontSize: 12 },
         { fontSize: 14 },
@@ -32,6 +37,7 @@ export default {
         { fontSize: 24 }
       ],
       defaultfontsize: 16,
+      // 主题数据设置
       themeslist: [
         {
           name: 'default',
@@ -69,20 +75,20 @@ export default {
     }
   },
   methods: {
+    // 注册主题
     registerTheme () {
       this.themeslist.forEach(theme => {
         this.themes.register(theme.name, theme.style)
       })
     },
+    // 改变字体大小函数
     changefontsize (val) {
       this.defaultfontsize = val
       if (this.themes) {
         this.themes.fontSize(val + 'px')
       }
     },
-    sayhi () {
-      console.log('say hahah')
-    },
+    // 调用rendition的api在页面上展示
     showepub () {
       this.book = new Epub(DownLoad)
       this.rendition = this.book.renderTo('read', {
@@ -93,7 +99,6 @@ export default {
       this.themes = this.rendition.themes
       this.changefontsize(this.defaultfontsize)
       this.registerTheme()
-      this.sayhi()
       this.themes.select('eye')
     },
     back () {
