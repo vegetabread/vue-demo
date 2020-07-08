@@ -1,8 +1,9 @@
 <template>
     <div class="ebook">
+      <!-- 顶部title模块，这个模块的z-index是101 -->
         <title-bar :showif="showif" @test="test"></title-bar>
+        <!-- 电子书区域，这片区域z-index设置为100 -->
         <div class="ebookwrapper">
-          <!-- 电子书显示盒子 -->
             <div id="read"></div>
             <!-- 中部蒙版 -->
             <div class="mask">
@@ -11,6 +12,8 @@
                 <div class="right" @click="goto"></div>
             </div>
         </div>
+        <!-- 底部组件组件的z-index是101 -->
+        <!-- 在底部组件中还有一个setmenu组件，这个组件的z-index是105 -->
         <menu-bar :showif="showif" ref="part"
         :bookAvailable='bookAvailable'
         :themeslist="themeslist"
@@ -80,6 +83,7 @@ export default {
           }
         }
       ],
+      // 设置默认主题
       defaulttheme: 0,
       bookAvailable: false,
       navigation: {}
@@ -89,29 +93,32 @@ export default {
     test () {
       this.themes.select('gold')
     },
+    // 目录跳转函数
     jumpto (href) {
       this.rendition.display(href)
       this.hideTitleandMenu()
-      this.$refs.part.hidecontent()
-      // 接上一个隐藏函数
     },
+    // 隐藏页面其他组件
     hideTitleandMenu () {
       this.iftitleandmenushow = false
       this.showif = false
-      // 一顿隐藏
+      this.$refs.part.hidecontent()
     },
+    // 进度条函数
     onProgresschange (progress) {
       const percentage = progress / 100
       const location = percentage > 0 ? this.locations.cfiFromPercentage(percentage) : 0
       this.rendition.display(location)
       console.log('结束了吗')
     },
+    // 设置主题
     setTheme (index) {
       console.log('接下来是主题测试-------', index)
       this.themes.select(this.themeslist[index].name)
       console.log('主题就是---------', this.themeslist[index].name)
       this.defaulttheme = index
     },
+    // 注册主题
     registerTheme () {
       this.themeslist.forEach(theme => {
         this.themes.register(theme.name, theme.style)
@@ -147,12 +154,15 @@ export default {
         this.bookAvailable = true
       })
     },
+    // 点击屏幕左侧，实现左翻页
     back () {
       this.rendition.prev()
     },
+    // 点击屏幕右侧，实现右翻页
     goto () {
       this.rendition.next()
     },
+    // 显示上下组件
     show () {
       this.showif = !this.showif
       this.$refs.part.hidenow()
