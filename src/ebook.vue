@@ -1,7 +1,6 @@
 <template>
     <div class="ebook">
-      <!-- 头部组件 -->
-        <title-bar :showif="showif"></title-bar>
+        <title-bar :showif="showif" @test="test"></title-bar>
         <div class="ebookwrapper">
           <!-- 电子书显示盒子 -->
             <div id="read"></div>
@@ -12,8 +11,17 @@
                 <div class="right" @click="goto"></div>
             </div>
         </div>
-        <!-- 底部导航栏组件 -->
-        <menu-bar :showif="showif" ref="part" @changesize="changefontsize" :defaultfontsize="defaultfontsize" :fontSizeList="fontSizeList"></menu-bar>
+        <menu-bar :showif="showif" ref="part"
+        :bookAvailable='bookAvailable'
+        :themeslist="themeslist"
+        :defaulttheme="defaulttheme"
+        @changetheme="setTheme"
+        @changesize="changefontsize"
+        @onProgresschange="onProgresschange"
+        @jumpto="jumpto"
+        :navigation="navigation"
+        :defaultfontsize="defaultfontsize"
+        :fontSizeList="fontSizeList"></menu-bar>
     </div>
 </template>
 <script>
@@ -71,11 +79,39 @@ export default {
             }
           }
         }
-      ]
+      ],
+      defaulttheme: 0,
+      bookAvailable: false,
+      navigation: {}
     }
   },
   methods: {
-    // 注册主题
+    test () {
+      this.themes.select('gold')
+    },
+    jumpto (href) {
+      this.rendition.display(href)
+      this.hideTitleandMenu()
+      this.$refs.part.hidecontent()
+      // 接上一个隐藏函数
+    },
+    hideTitleandMenu () {
+      this.iftitleandmenushow = false
+      this.showif = false
+      // 一顿隐藏
+    },
+    onProgresschange (progress) {
+      const percentage = progress / 100
+      const location = percentage > 0 ? this.locations.cfiFromPercentage(percentage) : 0
+      this.rendition.display(location)
+      console.log('结束了吗')
+    },
+    setTheme (index) {
+      console.log('接下来是主题测试-------', index)
+      this.themes.select(this.themeslist[index].name)
+      console.log('主题就是---------', this.themeslist[index].name)
+      this.defaulttheme = index
+    },
     registerTheme () {
       this.themeslist.forEach(theme => {
         this.themes.register(theme.name, theme.style)
@@ -99,7 +135,17 @@ export default {
       this.themes = this.rendition.themes
       this.changefontsize(this.defaultfontsize)
       this.registerTheme()
-      this.themes.select('eye')
+      this.sayhi()
+      this.setTheme(this.defaulttheme)
+      this.book.ready.then(() => {
+        this.navigation = this.book.navigation
+        console.log(this.navigation)
+        return this.book.locations.generate()
+      }).then(result => {
+        // 这部分能够访问到
+        this.locations = this.book.locations
+        this.bookAvailable = true
+      })
     },
     back () {
       this.rendition.prev()
